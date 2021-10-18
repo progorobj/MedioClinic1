@@ -7,18 +7,49 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Business;
+using MedioClinic.Configuration;
+using Autofac;
+using XperienceAdapter.Localization;
+using System.Reflection;
+using Microsoft.Extensions.Configuration;
+using Core.Configuration;
+using MedioClinic.Extensions;
+using CMS.DataEngine;
 
-namespace BlankSiteCore
+namespace MedioClinic
 {
     public class Startup
     {
+        private const string ConventionalRoutingControllers = "Error|ImageUploader|MediaLibraryUploader|FormTest|Account|Profile";
+
+
+       
+        public IConfiguration Configuration { get; } //ajouter le 18-10-2021 (a vérifier)
+
+
         public IWebHostEnvironment Environment { get; }
+        public IConfigurationSection? Options { get; }
 
 
-        public Startup(IWebHostEnvironment environment)
+
+        
+        public string? DefaultCulture => SettingsKeyInfoProvider.GetValue($"{Options?.GetSection("SiteCodeName")}.CMSDefaultCultureCode"); //ajouter le 18-10-2021 (a vérifier)
+        public AutoFacConfig AutoFacConfig => new AutoFacConfig();
+
+        public Startup(IWebHostEnvironment environment, IConfiguration configuration)
         {
             Environment = environment;
+            Configuration = configuration; //ajouter le 18-10-2021 (a vérifier)
+            Options = configuration.GetSection(nameof(XperienceOptions));
         }
+
+
+        
+        private void RegisterInitializationHandler(ContainerBuilder builder) =>
+            CMS.Base.ApplicationEvents.Initialized.Execute += (sender, eventArgs) => AutoFacConfig.ConfigureContainer(builder);
+
+      
 
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -35,7 +66,8 @@ namespace BlankSiteCore
                 // features.UseEmailTracking();
                 // features.UseCampaignLogger();
                 // features.UseScheduler();
-                // features.UsePageRouting();
+                 features.UsePageRouting(new PageRoutingOptions { CultureCodeRouteValuesKey = "culture" });
+                 
             });
 
             if (Environment.IsDevelopment())
@@ -53,10 +85,21 @@ namespace BlankSiteCore
                 kenticoServiceCollection.DisableVirtualContextSecurityForLocalhost();
             }
 
-            services.AddAuthentication();
+              services.AddAntiforgery();
+            //services.AddAuthentication();
             // services.AddAuthorization();
+            services.AddLocalization();
+            services.AddControllersWithViews()
+                .AddDataAnnotationsLocalization(options =>
+                {
+                    options.DataAnnotationLocalizerProvider = (type, factory) =>
+                    {
+                        var assemblyName = typeof(SharedResource).GetTypeInfo().Assembly.GetName().Name;
 
-            services.AddControllersWithViews();
+                        return factory.Create("SharedResource", assemblyName);
+                    };
+              });
+            services.Configure<XperienceOptions>(Options);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,29 +107,80 @@ namespace BlankSiteCore
         {
             if (Environment.IsDevelopment())
             {
+                app.UseLocalizedStatusCodePagesWithReExecute("/{0}/error/{1}/");
                 app.UseDeveloperExceptionPage();
+                app.UseBrowserLink();
             }
+            else
+            {
+                app.UseExceptionHandler(errorApp =>
+                {
+                    errorApp.Run(async context =>
+                    {
+                        context.Response.StatusCode = 500;
+                        context.Response.ContentType = "text/html";
+
+                        await context.Response.WriteAsync("<html lang=\"en\"><body>\r\n");
+                        await context.Response.WriteAsync("An error happened.<br><br>\r\n");
+
+                        var exceptionHandlerPathFeature =
+                            context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+
+                        if (exceptionHandlerPathFeature?.Error is System.IO.FileNotFoundException)
+                        {
+                            await context.Response.WriteAsync("A file error happened.<br><br>\r\n");
+                        }
+
+                        await context.Response.WriteAsync("<a href=\"/\">Home</a><br>\r\n");
+                        await context.Response.WriteAsync("</body></html>\r\n");
+                        await context.Response.WriteAsync(new string(' ', 512)); // IE padding
+                    });
+                });
+            }
+
 
             app.UseStaticFiles();
 
             app.UseKentico();
+            
 
             app.UseCookiePolicy();
 
             app.UseCors();
+            app.UseRouting();
+            app.UseRequestCulture();
 
-            app.UseAuthentication();
+            // app.UseAuthentication();
             // app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.Kentico().MapRoutes();
+                endpoints.MapControllerRoute(
+                    name: "error",
+                    pattern: "{culture}/error/{code}",
+                    defaults: new { controller = "Error", action = "Index" },
+                    constraints: new
+                    {
+                        controller = ConventionalRoutingControllers
+                    });
 
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("The site has not been configured yet.");
-                });
+                            endpoints.MapDefaultControllerRoute();
+
             });
+        }
+
+
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            try
+            {
+                AutoFacConfig.ConfigureContainer(builder);
+            }
+            catch
+            {
+                RegisterInitializationHandler(builder);
+            }
         }
     }
 }
