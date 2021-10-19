@@ -23,7 +23,7 @@ namespace MedioClinic.Controllers
 		public ErrorController(
 			ILogger<ErrorController> logger,
 			IOptionsMonitor<XperienceOptions> optionsMonitor,
-					IStringLocalizer<SharedResource> stringLocalizer,
+			IStringLocalizer<SharedResource> stringLocalizer,
 			IPageRepository<NamePerexText, CMS.DocumentEngine.Types.MedioClinic.NamePerexText> pageRepository)
 			: base(logger, optionsMonitor, stringLocalizer)
 		{
@@ -32,7 +32,7 @@ namespace MedioClinic.Controllers
 
 		public IActionResult Index(int code)
 		{
-			var metadata = new MedioClinic.Models.PageMetadata();
+			var metadata = new Models.PageMetadata();
 
 			if (code == 404)
 			{

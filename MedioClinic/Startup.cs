@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Core.Configuration;
 using MedioClinic.Extensions;
 using CMS.DataEngine;
+using Kentico.PageBuilder.Web.Mvc;
 
 namespace MedioClinic
 {
@@ -24,7 +25,7 @@ namespace MedioClinic
         private const string ConventionalRoutingControllers = "Error|ImageUploader|MediaLibraryUploader|FormTest|Account|Profile";
 
 
-       
+
         public IConfiguration Configuration { get; } //ajouter le 18-10-2021 (a vérifier)
 
 
@@ -33,7 +34,7 @@ namespace MedioClinic
 
 
 
-        
+
         public string? DefaultCulture => SettingsKeyInfoProvider.GetValue($"{Options?.GetSection("SiteCodeName")}.CMSDefaultCultureCode"); //ajouter le 18-10-2021 (a vérifier)
         public AutoFacConfig AutoFacConfig => new AutoFacConfig();
 
@@ -45,11 +46,11 @@ namespace MedioClinic
         }
 
 
-        
+
         private void RegisterInitializationHandler(ContainerBuilder builder) =>
             CMS.Base.ApplicationEvents.Initialized.Execute += (sender, eventArgs) => AutoFacConfig.ConfigureContainer(builder);
 
-      
+
 
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -59,15 +60,15 @@ namespace MedioClinic
             // Enable desired Kentico Xperience features
             var kenticoServiceCollection = services.AddKentico(features =>
             {
-                // features.UsePageBuilder();
+                features.UsePageBuilder();
                 // features.UseActivityTracking();
                 // features.UseABTesting();
                 // features.UseWebAnalytics();
                 // features.UseEmailTracking();
                 // features.UseCampaignLogger();
                 // features.UseScheduler();
-                 features.UsePageRouting(new PageRoutingOptions { CultureCodeRouteValuesKey = "culture" });
-                 
+                features.UsePageRouting(new PageRoutingOptions { CultureCodeRouteValuesKey = "culture" });
+
             });
 
             if (Environment.IsDevelopment())
@@ -84,11 +85,12 @@ namespace MedioClinic
                 // cookies and this information is taken from the URL.
                 kenticoServiceCollection.DisableVirtualContextSecurityForLocalhost();
             }
-
-              services.AddAntiforgery();
+            
+            services.AddAntiforgery(opt =>opt.SuppressXFrameOptionsHeader = false);
             //services.AddAuthentication();
             // services.AddAuthorization();
             services.AddLocalization();
+
             services.AddControllersWithViews()
                 .AddDataAnnotationsLocalization(options =>
                 {
@@ -98,7 +100,7 @@ namespace MedioClinic
 
                         return factory.Create("SharedResource", assemblyName);
                     };
-              });
+                });
             services.Configure<XperienceOptions>(Options);
         }
 
@@ -107,7 +109,7 @@ namespace MedioClinic
         {
             if (Environment.IsDevelopment())
             {
-                app.UseLocalizedStatusCodePagesWithReExecute("/{0}/error/{1}/");
+
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
@@ -136,13 +138,17 @@ namespace MedioClinic
                         await context.Response.WriteAsync(new string(' ', 512)); // IE padding
                     });
                 });
+
+                app.UseHsts();
             }
 
 
+            app.UseLocalizedStatusCodePagesWithReExecute("/{0}/error/{1}/");
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseKentico();
-            
+
 
             app.UseCookiePolicy();
 
@@ -150,8 +156,8 @@ namespace MedioClinic
             app.UseRouting();
             app.UseRequestCulture();
 
-            // app.UseAuthentication();
-            // app.UseAuthorization();
+             //app.UseAuthentication();
+             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
@@ -165,12 +171,16 @@ namespace MedioClinic
                         controller = ConventionalRoutingControllers
                     });
 
-                            endpoints.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute();
 
             });
         }
 
-
+        /// <summary>
+        /// Registers a handler in case Xperience is not initialized yet.
+        /// </summary>
+        /// <param name="builder">Container builder.</param>
+      
         public void ConfigureContainer(ContainerBuilder builder)
         {
             try

@@ -33,32 +33,31 @@ namespace MedioClinic.Components.ViewComponents
 			_navigationRepository = navigationRepository ?? throw new ArgumentNullException(nameof(navigationRepository));
 		}
 
-		private NavigationItem? GetNavigationItemByRelativeUrl(string searchPath, NavigationItem startingPointItem)
+
+		public async Task<IViewComponentResult> InvokeAsync(string cultureSwitchId)
 		{
-			if (startingPointItem != null)
+			var variants = await GetUrlCultureVariantsAsync();
+			var model = (cultureSwitchId, variants?.ToDictionary(kvp1 => kvp1.Key, kvp2 => kvp2.Value));
+
+			return View(model);
+		}
+
+
+		private async Task<IEnumerable<KeyValuePair<SiteCulture, string>>>? GetUrlCultureVariantsAsync()
+		{
+			var defaultCulture = _siteCultureRepository.DefaultSiteCulture;
+			var completePath = string.IsNullOrEmpty(Request.PathBase) ? Request.Path.Value : $"{Request.PathBase}{Request.Path.Value}";
+			var searchPath = Request.Path.Equals("/") && defaultCulture != null ? $"/{defaultCulture.IsoCode?.ToLowerInvariant()}/home/" : completePath;
+			var currentCulture = Thread.CurrentThread.CurrentUICulture.ToSiteCulture();
+
+			if (currentCulture != null && !ExcludedPaths.Any(path => searchPath.Contains(path)))
 			{
-				var parsed = Url.Content(startingPointItem.RelativeUrl);
-
-				if (parsed?.Equals(searchPath, StringComparison.OrdinalIgnoreCase) == true)
-				{
-					return startingPointItem;
-				}
-				else if (startingPointItem.ChildItems?.Any() == true)
-				{
-					var matches = new List<NavigationItem>();
-
-					foreach (var child in startingPointItem.ChildItems)
-					{
-						var childMatch = GetNavigationItemByRelativeUrl(searchPath, child);
-						matches.Add(childMatch!);
-					}
-
-					return matches.FirstOrDefault(match => match != null);
-				}
+				return await GetDatabaseUrlVariantsAsync(searchPath, currentCulture) ?? GetNonDatabaseUrlVariants(searchPath);
 			}
 
 			return null;
 		}
+
 
 		private async Task<IEnumerable<KeyValuePair<SiteCulture, string>>>? GetDatabaseUrlVariantsAsync(string searchPath, SiteCulture currentCulture)
 		{
@@ -86,6 +85,34 @@ namespace MedioClinic.Components.ViewComponents
 			return null;
 		}
 
+		private NavigationItem? GetNavigationItemByRelativeUrl(string searchPath, NavigationItem startingPointItem)
+		{
+			if (startingPointItem != null)
+			{
+				var parsed = Url.Content(startingPointItem.RelativeUrl);
+
+				if (parsed?.Equals(searchPath, StringComparison.OrdinalIgnoreCase) == true)
+				{
+					return startingPointItem;
+				}
+				else if (startingPointItem.ChildItems?.Any() == true)
+				{
+					var matches = new List<NavigationItem>();
+
+					foreach (var child in startingPointItem.ChildItems)
+					{
+						var childMatch = GetNavigationItemByRelativeUrl(searchPath, child);
+						matches.Add(childMatch!);
+					}
+
+					return matches.FirstOrDefault(match => match != null);
+				}
+			}
+
+			return null;
+		}
+
+
 		private IEnumerable<KeyValuePair<SiteCulture, string>>? GetNonDatabaseUrlVariants(string searchPath)
 		{
 			var cultures = _siteCultureRepository.GetAll();
@@ -100,28 +127,10 @@ namespace MedioClinic.Components.ViewComponents
 
 			return null;
 		}
-		private async Task<IEnumerable<KeyValuePair<SiteCulture, string>>>? GetUrlCultureVariantsAsync()
-		{
-			var defaultCulture = _siteCultureRepository.DefaultSiteCulture;
-			var completePath = string.IsNullOrEmpty(Request.PathBase) ? Request.Path.Value : $"{Request.PathBase}{Request.Path.Value}";
-			var searchPath = Request.Path.Equals("/") && defaultCulture != null ? $"/{defaultCulture.IsoCode?.ToLowerInvariant()}/home/" : completePath;
-			var currentCulture = Thread.CurrentThread.CurrentUICulture.ToSiteCulture();
 
-			if (currentCulture != null && !ExcludedPaths.Any(path => searchPath.Contains(path)))
-			{
-				return await GetDatabaseUrlVariantsAsync(searchPath, currentCulture) ?? GetNonDatabaseUrlVariants(searchPath);
-			}
 
-			return null;
-		}
 
-		public async Task<IViewComponentResult> InvokeAsync(string cultureSwitchId)
-		{
-			var variants = await GetUrlCultureVariantsAsync();
-			var model = (cultureSwitchId, variants?.ToDictionary(kvp1 => kvp1.Key, kvp2 => kvp2.Value));
 
-			return View(model);
-		}
 	}
 
 }
