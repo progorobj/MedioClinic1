@@ -18,8 +18,6 @@ using XperienceAdapter.Repositories;
 
 [assembly: RegisterPageRoute(CMS.DocumentEngine.Types.MedioClinic.SiteSection.CLASS_NAME, typeof(DoctorsController), ActionName = nameof(DoctorsController.Index), Path = "/Doctors")]
 [assembly: RegisterPageRoute(CMS.DocumentEngine.Types.MedioClinic.Doctor.CLASS_NAME, typeof(DoctorsController), ActionName = nameof(DoctorsController.Detail))]
-
-
 namespace MedioClinic.Controllers
 {
     public class DoctorsController : BaseController

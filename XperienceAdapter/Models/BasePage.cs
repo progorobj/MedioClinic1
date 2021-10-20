@@ -5,7 +5,10 @@ using System.Text;
 
 namespace XperienceAdapter.Models
 {
-    public class BasePage
+	/// <summary>
+	/// Base page model.
+	/// </summary>
+	public class BasePage
     {
 		public virtual IEnumerable<string> SourceColumns => new List<string>
 	{

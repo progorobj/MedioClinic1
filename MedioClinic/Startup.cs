@@ -17,6 +17,7 @@ using Core.Configuration;
 using MedioClinic.Extensions;
 using CMS.DataEngine;
 using Kentico.PageBuilder.Web.Mvc;
+using Microsoft.AspNetCore.Mvc.Razor;
 
 namespace MedioClinic
 {
@@ -85,13 +86,20 @@ namespace MedioClinic
                 // cookies and this information is taken from the URL.
                 kenticoServiceCollection.DisableVirtualContextSecurityForLocalhost();
             }
-            
-            services.AddAntiforgery(opt =>opt.SuppressXFrameOptionsHeader = false);
+
+
             //services.AddAuthentication();
             // services.AddAuthorization();
+            //services.AddLocalization();
+
             services.AddLocalization();
 
+   
+
+
+            services.AddAntiforgery();
             services.AddControllersWithViews()
+
                 .AddDataAnnotationsLocalization(options =>
                 {
                     options.DataAnnotationLocalizerProvider = (type, factory) =>
@@ -141,23 +149,23 @@ namespace MedioClinic
 
                 app.UseHsts();
             }
-
-
             app.UseLocalizedStatusCodePagesWithReExecute("/{0}/error/{1}/");
+
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseKentico();
-
+            app.UseRequestCulture();
 
             app.UseCookiePolicy();
 
             app.UseCors();
             app.UseRouting();
-            app.UseRequestCulture();
+            
 
              //app.UseAuthentication();
-             app.UseAuthorization();
+            // app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
