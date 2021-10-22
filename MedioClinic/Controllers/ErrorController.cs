@@ -1,17 +1,20 @@
-﻿using Business.Models;
-using Core.Configuration;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using XperienceAdapter.Localization;
-using XperienceAdapter.Repositories;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+
 using CMS.Base;
+
+using XperienceAdapter.Repositories;
+using Core.Configuration;
+using Business.Models;
+using MedioClinic.Models;
+using XperienceAdapter.Localization;
+using Microsoft.Extensions.Localization;
 
 namespace MedioClinic.Controllers
 {

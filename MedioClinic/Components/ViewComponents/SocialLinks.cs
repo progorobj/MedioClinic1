@@ -1,12 +1,14 @@
 ﻿#define no_suffix
-using Business.Models;
-using Microsoft.AspNetCore.Mvc;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+
 using XperienceAdapter.Repositories;
+using Business.Models;
+using System.Threading;
 
 namespace MedioClinic.Components.ViewComponents
 {

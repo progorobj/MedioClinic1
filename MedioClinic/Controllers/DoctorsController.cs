@@ -1,20 +1,24 @@
-﻿using Business.Models;
-using CMS.DocumentEngine;
-using Core.Configuration;
-using Kentico.Content.Web.Mvc;
-using Kentico.Content.Web.Mvc.Routing;
-using MedioClinic.Controllers;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using XperienceAdapter.Localization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+using CMS.Base;
+using CMS.DocumentEngine;
+using Kentico.Content.Web.Mvc;
+using Kentico.Content.Web.Mvc.Routing;
+
+using Core.Configuration;
+using XperienceAdapter.Models;
 using XperienceAdapter.Repositories;
+using Business.Models;
+using MedioClinic.Controllers;
+using MedioClinic.Models;
+using XperienceAdapter.Localization;
+using Microsoft.Extensions.Localization;
 
 [assembly: RegisterPageRoute(CMS.DocumentEngine.Types.MedioClinic.SiteSection.CLASS_NAME, typeof(DoctorsController), ActionName = nameof(DoctorsController.Index), Path = "/Doctors")]
 [assembly: RegisterPageRoute(CMS.DocumentEngine.Types.MedioClinic.Doctor.CLASS_NAME, typeof(DoctorsController), ActionName = nameof(DoctorsController.Detail))]

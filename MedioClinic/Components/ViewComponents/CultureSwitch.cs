@@ -33,29 +33,6 @@ namespace MedioClinic.Components.ViewComponents
             _navigationRepository = navigationRepository ?? throw new ArgumentNullException(nameof(navigationRepository));
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(string cultureSwitchId)
-        {
-            var variants = await GetUrlCultureVariantsAsync();
-            var model = (cultureSwitchId, variants?.ToDictionary(kvp1 => kvp1.Key, kvp2 => kvp2.Value));
-
-            return View(model);
-        }
-
-        private async Task<IEnumerable<KeyValuePair<SiteCulture, string>>>? GetUrlCultureVariantsAsync()
-        {
-            var defaultCulture = _siteCultureRepository.DefaultSiteCulture;
-            var completePath = string.IsNullOrEmpty(Request.PathBase) ? Request.Path.Value : $"{Request.PathBase}{Request.Path.Value}";
-            var searchPath = Request.Path.Equals("/") && defaultCulture != null ? $"/{defaultCulture.IsoCode?.ToLowerInvariant()}/home/" : completePath;
-            var currentCulture = Thread.CurrentThread.CurrentUICulture.ToSiteCulture();
-
-            if (currentCulture != null && !ExcludedPaths.Any(path => searchPath.Contains(path)))
-            {
-                return await GetDatabaseUrlVariantsAsync(searchPath, currentCulture) ?? GetNonDatabaseUrlVariants(searchPath);
-            }
-
-            return null;
-        }
-
         private async Task<IEnumerable<KeyValuePair<SiteCulture, string>>>? GetDatabaseUrlVariantsAsync(string searchPath, SiteCulture currentCulture)
         {
             var navigation = await _navigationRepository.GetWholeNavigationAsync();
@@ -81,6 +58,48 @@ namespace MedioClinic.Components.ViewComponents
 
             return null;
         }
+
+
+        private IEnumerable<KeyValuePair<SiteCulture, string>>? GetNonDatabaseUrlVariants(string searchPath)
+        {
+            var cultures = _siteCultureRepository.GetAll();
+            var segments = searchPath.Split('/');
+
+            if (cultures.Any(culture => culture.IsoCode?.Equals(segments?[1], StringComparison.InvariantCultureIgnoreCase) == true))
+            {
+                var trailingPath = string.Join('/', segments.Skip(2));
+
+                return cultures.Select(culture => new KeyValuePair<SiteCulture, string>(culture, $"/{culture.IsoCode?.ToLower()}/{trailingPath}"));
+            }
+
+            return null;
+        }
+        private async Task<IEnumerable<KeyValuePair<SiteCulture, string>>>? GetUrlCultureVariantsAsync()
+        {
+            var defaultCulture = _siteCultureRepository.DefaultSiteCulture;
+            var completePath = string.IsNullOrEmpty(Request.PathBase) ? Request.Path.Value : $"{Request.PathBase}{Request.Path.Value}";
+            var searchPath = Request.Path.Equals("/") && defaultCulture != null ? $"/{defaultCulture.IsoCode?.ToLowerInvariant()}/home/" : completePath;
+            var currentCulture = Thread.CurrentThread.CurrentUICulture.ToSiteCulture();
+
+            if (currentCulture != null && !ExcludedPaths.Any(path => searchPath.Contains(path)))
+            {
+                return await GetDatabaseUrlVariantsAsync(searchPath, currentCulture) ?? GetNonDatabaseUrlVariants(searchPath);
+            }
+
+            return null;
+        }
+
+
+        public async Task<IViewComponentResult> InvokeAsync(string cultureSwitchId)
+        {
+            var variants = await GetUrlCultureVariantsAsync();
+            var model = (cultureSwitchId, variants?.ToDictionary(kvp1 => kvp1.Key, kvp2 => kvp2.Value));
+
+            return View(model);
+        }
+
+ 
+       
 
         private NavigationItem? GetNavigationItemByRelativeUrl(string searchPath, NavigationItem startingPointItem)
         {
@@ -109,19 +128,6 @@ namespace MedioClinic.Components.ViewComponents
             return null;
         }
 
-        private IEnumerable<KeyValuePair<SiteCulture, string>>? GetNonDatabaseUrlVariants(string searchPath)
-        {
-            var cultures = _siteCultureRepository.GetAll();
-            var segments = searchPath.Split('/');
-
-            if (cultures.Any(culture => culture.IsoCode?.Equals(segments?[1], StringComparison.InvariantCultureIgnoreCase) == true))
-            {
-                var trailingPath = string.Join('/', segments.Skip(2));
-
-                return cultures.Select(culture => new KeyValuePair<SiteCulture, string>(culture, $"/{culture.IsoCode?.ToLower()}/{trailingPath}"));
-            }
-
-            return null;
-        }
+       
     }
 }

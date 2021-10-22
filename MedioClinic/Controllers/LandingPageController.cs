@@ -2,6 +2,7 @@
 using Core.Configuration;
 using Kentico.Content.Web.Mvc;
 using Kentico.Content.Web.Mvc.Routing;
+using Kentico.PageBuilder.Web.Mvc.PageTemplates;
 using MedioClinic.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -60,9 +61,15 @@ namespace MedioClinic.Controllers
 
                     if (landingPage != null)
                     {
-                        var viewModel = GetPageViewModel(pageDataContext.Metadata, landingPage);
+                        // Implementation without page templates (begin)
+                        //var viewModel = GetPageViewModel(pageDataContext.Metadata, landingPage);
 
-                        return View(viewModel);
+                        //return View(viewModel);
+                        // Implementation without page templates (end)
+
+                        // Page template implementation (begin)
+                        return new TemplateResult();
+                        // Page template implementation (end)
                     }
 
                 }

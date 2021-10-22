@@ -1,10 +1,18 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 using Kentico.Content.Web.Mvc;
+using Kentico.Forms.Web.Mvc;
 using Kentico.PageBuilder.Web.Mvc;
+using Kentico.PageBuilder.Web.Mvc.PageTemplates;
+
 using MedioClinic.Components;
 using MedioClinic.Components.InlineEditors;
 using MedioClinic.Components.Sections;
 using MedioClinic.Components.Widgets;
+
 
 [assembly: RegisterSection(
     ComponentIdentifiers.SingleColumnSection,

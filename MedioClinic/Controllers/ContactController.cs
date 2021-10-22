@@ -1,21 +1,25 @@
-﻿using Business.Models;
-using CMS.DocumentEngine;
-using Core.Configuration;
-using Kentico.Content.Web.Mvc;
-using Kentico.Content.Web.Mvc.Routing;
-using MedioClinic.Controllers;
-using MedioClinic.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using XperienceAdapter.Localization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+using CMS.Base;
+using CMS.DocumentEngine;
+using Kentico.Content.Web.Mvc;
+using Kentico.Content.Web.Mvc.Routing;
+
+using Core.Configuration;
+using XperienceAdapter.Models;
 using XperienceAdapter.Repositories;
+using Business.Models;
+using MedioClinic.Controllers;
+using MedioClinic.Models;
+using Microsoft.Extensions.Localization;
+using XperienceAdapter.Localization;
 
 [assembly: RegisterPageRoute(CMS.DocumentEngine.Types.MedioClinic.NamePerexText.CLASS_NAME, typeof(ContactController), Path = "/Contact-us")]
 namespace MedioClinic.Controllers

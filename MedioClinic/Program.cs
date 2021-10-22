@@ -19,12 +19,13 @@ namespace MedioClinic
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
-         Host.CreateDefaultBuilder(args)
-            .ConfigureLogging(logging => logging.AddXperience())
-            .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<Startup>();
+    Host.CreateDefaultBuilder(args)
+        .ConfigureLogging(logging => logging.AddXperience())
+        .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+        .ConfigureWebHostDefaults(webBuilder =>
+        {
+            webBuilder.CaptureStartupErrors(true);
+            webBuilder.UseStartup<Startup>();
         });
     }
 }

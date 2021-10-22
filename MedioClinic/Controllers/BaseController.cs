@@ -1,14 +1,14 @@
-﻿using Core.Configuration;
-using Kentico.Content.Web.Mvc;
-using MedioClinic.Models;
+﻿using System;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
+using Kentico.Content.Web.Mvc;
+
+using Core.Configuration;
+
+using MedioClinic.Models;
+using Microsoft.Extensions.Localization;
 using XperienceAdapter.Localization;
 
 namespace MedioClinic.Controllers

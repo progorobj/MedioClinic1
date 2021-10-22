@@ -18,6 +18,8 @@ using MedioClinic.Extensions;
 using CMS.DataEngine;
 using Kentico.PageBuilder.Web.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.Localization;
+using Amazon.Auth.AccessControlPolicy;
 
 namespace MedioClinic
 {
@@ -27,7 +29,7 @@ namespace MedioClinic
 
 
 
-        public IConfiguration Configuration { get; } //ajouter le 18-10-2021 (a vérifier)
+       // public IConfiguration Configuration { get; } //ajouter le 18-10-2021 (a vérifier)
 
 
         public IWebHostEnvironment Environment { get; }
@@ -36,13 +38,13 @@ namespace MedioClinic
 
 
 
-        public string? DefaultCulture => SettingsKeyInfoProvider.GetValue($"{Options?.GetSection("SiteCodeName")}.CMSDefaultCultureCode"); //ajouter le 18-10-2021 (a vérifier)
+        //public string? DefaultCulture => SettingsKeyInfoProvider.GetValue($"{Options?.GetSection("SiteCodeName")}.CMSDefaultCultureCode"); //ajouter le 18-10-2021 (a vérifier)
         public AutoFacConfig AutoFacConfig => new AutoFacConfig();
 
         public Startup(IWebHostEnvironment environment, IConfiguration configuration)
         {
             Environment = environment;
-            Configuration = configuration; //ajouter le 18-10-2021 (a vérifier)
+           // Configuration = configuration; //ajouter le 18-10-2021 (a vérifier)
             Options = configuration.GetSection(nameof(XperienceOptions));
         }
 
@@ -90,11 +92,14 @@ namespace MedioClinic
 
             //services.AddAuthentication();
             // services.AddAuthorization();
-            //services.AddLocalization();
-
             services.AddLocalization();
 
-   
+
+
+
+            services.Configure<XperienceOptions>(Options);
+
+
 
 
             services.AddAntiforgery();
@@ -109,7 +114,7 @@ namespace MedioClinic
                         return factory.Create("SharedResource", assemblyName);
                     };
                 });
-            services.Configure<XperienceOptions>(Options);
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
